@@ -17,7 +17,7 @@ def _sortfunc(j: int) -> int:
 
 def computePerformance (model: tf.keras.models, dir: str, labels: pd.DataFrame ) -> np.array :
     i = 0
-    list_files = glob.glob(os.path.join(dir, "*.npy"))
+    list_files = glob.glob(os.path.join(dir, '*.npy'))
     accuracy = np.zeros(len(list_files))
     list_files.sort(key=_sortfunc)
     for filename in list_files:
@@ -42,16 +42,16 @@ def labelDataset (accuracy : np.array, label : np.array) -> list:
                 labData.append((accuracy[i], j+1))
     return labData
 
-model= tf.keras.models.load_model('models/gtsrb/model3b.h5')
+model= tf.keras.models.load_model(os.path.join('models', 'gtsrb', 'model3b.h5'))
 [X_train, y_train, X_test, y_test, labels] = load_gtsrb()
 print(y_test)
-dir = "modifieddata"
-#acc = computePerformance(model, dir, y_test)
-#np.save(os.path.join("modifieddata", "accuracy"), acc)
-acc = np.load("modifieddata/accuracy.npy")
+dir = 'modifieddata'
+acc = computePerformance(model, dir, y_test)
+np.save(os.path.join('modifieddata', 'accuracy'), acc)
+acc = np.load(os.path.join('modifieddata', 'accuracy.npy'))
 labels = np.array([0.70, 0.40])
 labData = labelDataset(acc, labels)
 print(labData[0][1])
 print(acc)
-np.save(os.path.join("modifieddata", "labDatasets"),labData)
+np.save(os.path.join('modifieddata', 'labDatasets'), labData)
 print(labData)

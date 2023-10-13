@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from datasets import load_gtsrb, load_cifar
 from PIL import Image
 from transforms import haze, increase_contrast, gaussianblureps
@@ -39,7 +40,7 @@ def createalldatasets(data: np.array, allcombtransf: list):
         newdata = createdataset(data, allcombtransf[i])
         print(allcombtransf[i])
         print(i)
-        np.save(f'modifieddata/data{i}.npy', newdata)
+        np.save(os.path.join('modifieddata', f'data{i}.npy', newdata))
 
 
 transf = [0, 0.2, 0.5, 0.8, 1]

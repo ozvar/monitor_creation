@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import typing
 import random
 from tensorflow.keras.utils import to_categorical
@@ -38,9 +39,9 @@ def findsamples (ind: np.array, num_ind_tr: int, num_ind_test: int) -> typing.Tu
 def concSamples (ind: np.array) -> np.array:
     for i in range(len(ind)):
         if i == 0:
-            im = np.load(f'modifieddata/data{int(ind[i])}.npy')
+            im = np.load(os.path.join('modifieddata', 'data{int(ind[i])}.npy'))
         else:
-            im = np.concatenate((im ,  np.load(f'modifieddata/data{int(ind[i])}.npy')))
+            im = np.concatenate((im ,  np.load(os.path.join('modifieddata', 'data{int(ind[i])}.npy'))))
     return im
 def shuffle_arrays(arrays: list, set_seed=-1):
     """Shuffles arrays in-place, in the same order, along axis=0
@@ -57,7 +58,7 @@ def shuffle_arrays(arrays: list, set_seed=-1):
         rstate = np.random.RandomState(seed)
         rstate.shuffle(arr)
 
-labData = np.load("modifieddata/labDatasets.npy")
+labData = np.load(os.path.join('modifieddata', 'labDatasets.npy'))
 ind1 = findIndexes(labData, 0)
 ind2 = findIndexes(labData, 1)
 ind3 = findIndexes(labData, 2)

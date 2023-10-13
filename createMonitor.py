@@ -15,11 +15,11 @@ def create_model():
     return tf.keras.Sequential(
         [
             tf.keras.Input(shape=(32, 32, 3)),
-            tf.keras.layers.Conv2D(16, 3, activation="relu"),
-            tf.keras.layers.Conv2D(32, 3, activation="relu"),
-            tf.keras.layers.Conv2D(64, 3, activation="relu"),
-            tf.keras.layers.Conv2D(128, 3, activation="relu"),
-            tf.keras.layers.Conv2D(256, 3, activation="relu"),
+            tf.keras.layers.Conv2D(16, 3, activation='relu'),
+            tf.keras.layers.Conv2D(32, 3, activation='relu'),
+            tf.keras.layers.Conv2D(64, 3, activation='relu'),
+            tf.keras.layers.Conv2D(128, 3, activation='relu'),
+            tf.keras.layers.Conv2D(256, 3, activation='relu'),
             tf.keras.layers.GlobalAveragePooling2D(),
             tf.keras.layers.Dense(3, activation='softmax')
 
