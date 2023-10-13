@@ -1,0 +1,53 @@
+import numpy as np
+from datasets import load_gtsrb, load_cifar
+from PIL import Image
+from transforms import haze, increase_contrast, gaussianblureps
+
+
+def combinatorialtransf(eps: list) -> list:
+    for i in range(len(eps)):
+        if i == 0:
+            haze = eps[i]
+        elif i == 1:
+            blur = eps[i]
+        elif i == 2:
+            contrast = eps[i]
+    combprod = []
+    for h in haze:
+        for b in blur:
+            for c in contrast:
+                combprod.append([h, b, c])
+    return combprod
+
+
+def applycombinedtransf(image: np.array, transf: list) -> np.array:
+    image = haze(image, transf[0])
+    image = gaussianblureps(image, transf[1])
+    image = increase_contrast(image, transf[2])
+    return image
+
+
+def createdataset(data: np.array, transf: list) -> np.array:
+    newdata = np.empty(data.shape)
+    for i in range(data.shape[0]):
+        newdata[i] = applycombinedtransf(data[i], transf)
+    return newdata
+
+
+def createalldatasets(data: np.array, allcombtransf: list):
+    for i in range(len(allcombtransf)):
+        newdata = createdataset(data, allcombtransf[i])
+        print(allcombtransf[i])
+        print(i)
+        np.save(f'modifieddata/data{i}.npy', newdata)
+
+
+transf = [0, 0.2, 0.5, 0.8, 1]
+alltransf = []
+alltransf.append(transf)
+alltransf.append(transf)
+alltransf.append(transf)
+combprod = combinatorialtransf(alltransf)
+#print(combprod)
+[X_train, y_train, X_test, y_test, labels] = load_gtsrb()
+createalldatasets(X_test, combprod)

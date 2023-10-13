@@ -1,0 +1,37 @@
+// write a git ignore for a new python project, also exclude .pickle files and the modifieddata directory
+# Datasets
+/data/**/*.p
+!/data/**/*.zip
+!/data/**/*.tar.gz
+/modifieddata
+
+# pickled data 
+*.pickle
+
+# models
+models
+
+# Python cache & checkpoints
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints
+
+# Environments
+/.env
+/.venv
+/env
+venv
+/ENV
+/env.bak
+/venv.bak
+/.python-version
+
+# IDEs
+.vscode
+.atom
+.idea
+
+# Other
+.DS_Store
+/tmp
