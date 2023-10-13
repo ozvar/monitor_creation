@@ -8,9 +8,6 @@
 # pickled data 
 *.pickle
 
-# models
-models
-
 # Python cache & checkpoints
 __pycache__/
 *.py[cod]
