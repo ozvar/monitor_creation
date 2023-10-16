@@ -1,8 +1,9 @@
 import numpy as np
 import os
-from datasets import load_gtsrb, load_cifar
 from PIL import Image
+from datasets import load_gtsrb, load_cifar 
 from transforms import haze, increase_contrast, gaussianblureps
+from parameters import TRANSF, DATA_DIR
 
 
 def combinatorialtransf(eps: list) -> list:
@@ -35,20 +36,20 @@ def createdataset(data: np.array, transf: list) -> np.array:
     return newdata
 
 
-def createalldatasets(data: np.array, allcombtransf: list):
+def createalldatasets(data: np.array, allcombtransf: list, out_dir: str):
     for i in range(len(allcombtransf)):
         newdata = createdataset(data, allcombtransf[i])
         print(allcombtransf[i])
         print(i)
-        np.save(os.path.join('modifieddata', f'data{i}.npy', newdata))
+        np.save(os.path.join(out_dir, f'data{i}.npy', newdata))
 
 
-transf = [0, 0.2, 0.5, 0.8, 1]
-alltransf = []
-alltransf.append(transf)
-alltransf.append(transf)
-alltransf.append(transf)
-combprod = combinatorialtransf(alltransf)
-#print(combprod)
-[X_train, y_train, X_test, y_test, labels] = load_gtsrb()
-createalldatasets(X_test, combprod)
+def trainmonitor(transf: list, dataset: str, out_dir: str):
+    # hard coding number of influencing factors for now
+    alltransf = [transf]*3
+    combprod = combinatorialtransf(alltransf)
+    print(combprod)
+    # preparing for option to train on CIFAR too
+    if dataset == 'gtsrb': 
+        [X_train, y_train, X_test, y_test, labels] = load_gtsrb()
+    createalldatasets(X_test, combprod, out_dir)

@@ -3,7 +3,7 @@
 /data/**/*.p
 !/data/**/*.zip
 !/data/**/*.tar.gz
-/modifieddata
+/transformations
 
 # pickled data 
 *.pickle
