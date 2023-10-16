@@ -44,7 +44,7 @@ def createalldatasets(data: np.array, allcombtransf: list, out_dir: str):
         np.save(os.path.join(out_dir, f'data{i}.npy', newdata))
 
 
-def trainmonitor(transf: list, dataset: str, out_dir: str):
+def gen_datasets_from_transaforms(transf: list, dataset: str, out_dir: str):
     # hard coding number of influencing factors for now
     alltransf = [transf]*3
     combprod = combinatorialtransf(alltransf)
