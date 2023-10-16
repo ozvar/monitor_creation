@@ -6,7 +6,7 @@ from transforms import haze, increase_contrast, gaussianblureps
 from parameters import TRANSF, DATA_DIR
 
 
-def combinatorialtransf(eps: list) -> list:
+def combinatorial_transf(eps: list) -> list:
     for i in range(len(eps)):
         if i == 0:
             haze = eps[i]
@@ -22,23 +22,23 @@ def combinatorialtransf(eps: list) -> list:
     return combprod
 
 
-def applycombinedtransf(image: np.array, transf: list) -> np.array:
+def apply_combined_transf(image: np.array, transf: list) -> np.array:
     image = haze(image, transf[0])
     image = gaussianblureps(image, transf[1])
     image = increase_contrast(image, transf[2])
     return image
 
 
-def createdataset(data: np.array, transf: list) -> np.array:
+def create_dataset(data: np.array, transf: list) -> np.array:
     newdata = np.empty(data.shape)
     for i in range(data.shape[0]):
-        newdata[i] = applycombinedtransf(data[i], transf)
+        newdata[i] = apply_combined_transf(data[i], transf)
     return newdata
 
 
-def createalldatasets(data: np.array, allcombtransf: list, out_dir: str):
+def create_all_datasets(data: np.array, allcombtransf: list, out_dir: str):
     for i in range(len(allcombtransf)):
-        newdata = createdataset(data, allcombtransf[i])
+        newdata = create_dataset(data, allcombtransf[i])
         print(allcombtransf[i])
         print(i)
         np.save(os.path.join(out_dir, f'data{i}.npy', newdata))
@@ -47,9 +47,9 @@ def createalldatasets(data: np.array, allcombtransf: list, out_dir: str):
 def gen_datasets_from_transforms(transf: list, dataset: str, out_dir: str):
     # hard coding number of influencing factors for now
     alltransf = [transf]*3
-    combprod = combinatorialtransf(alltransf)
+    combprod = combinatorial_transf(alltransf)
     print(combprod)
     # preparing for option to train on CIFAR too
     if dataset == 'gtsrb': 
         [X_train, y_train, X_test, y_test, labels] = load_gtsrb()
-    createalldatasets(X_test, combprod, out_dir)
+    create_all_datasets(X_test, combprod, out_dir)
