@@ -20,7 +20,7 @@ python == 3.8.1
 
 ```bash
 git clone <GITHUB_REPO_URL>
-cd createMonitors
+cd monitor_creation 
 
 python3 -m venv venv
 source venv/bin/activate
