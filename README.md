@@ -8,9 +8,10 @@ The aim of this work is to conceptualise and develop a runtime safety monitor fo
 
 The problem is tackled sequentially:
 1. A representative set of input data is degraded for $n^k$ combinations, with $k$ influencing factors that may impact input data at runtime (e.g., fog, rain), and $n$ different values of  the perturbation value $\epsilon$ (see combineTransform.py).
-2. The performance of the ML component is tested on each of the $n^k$ degraded datasets. Each dataset is labelled according to its accuracy class, specified a priori by the developer of the monitor (see labelDataset.py).
+2. The performance of the ML component is tested on each of the $n^k$ degraded datasets. Each dataset is labelled according to its accuracy class, specified a priori by the developer of the monitor (see labelData.py).
 3. Image data is prepared for training by randomly selecting $ntrainind$ and $ntestind$ degraded datasets from each accuracy class. Datasets are then concatenated, randomly shuffled, and pickled under *data.pickle* (see prepareData.py).
-4. A deep learning model is trained to classify images based on their accuracy class. When deployed together with the original ML component, the monitor may then trigger a safety assessment upon detecting input data that is likely to result in unacceptable performance.
+4. A deep learning model is trained to classify images based on their accuracy class. When deployed together with the original ML component, the monitor may then trigger a safety assessment upon detecting input data that is likely to result in unacceptable performance (see createMonitor).
+
 ### Prerequisites
 
 python == 3.8.1
@@ -34,6 +35,8 @@ Python scripts to be executed in this order:
 2. labelData.py
 3. prepareData.py
 4. createMonitor.py
+
+(moving to jupyter notebook)
 
 ### Resources
 
