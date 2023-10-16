@@ -6,7 +6,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import cifar10
 from utils import normalize
 
-DATA_PATH = os.path.join(os.path.dirname(__file__), 'data')
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data')
 GTSRB_PATH = os.path.join(DATA_PATH, 'gtsrb')
 PLACEHOLDERS_PATH = os.path.join(DATA_PATH, 'placeholders')
 
