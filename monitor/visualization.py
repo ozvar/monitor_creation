@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib as mpl
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -24,24 +25,24 @@ def sns_styleset():
                            '#4c72b0',
                            '#dd8452'],
                   font='Arial')
-    matplotlib.rcParams['figure.dpi']        = 300
-    matplotlib.rcParams['axes.linewidth']    = 1
-    matplotlib.rcParams['grid.color']        = '.8'
-    matplotlib.rcParams['axes.edgecolor']    = '.15'
+    mpl.rcParams['figure.dpi']        = 300
+    mpl.rcParams['axes.linewidth']    = 1
+    mpl.rcParams['grid.color']        = '.8'
+    mpl.rcParams['axes.edgecolor']    = '.15'
     mpl.rcParams['axes.spines.right']        = False
     mpl.rcParams['axes.spines.top']          = False
-    matplotlib.rcParams['xtick.bottom']      = True
-    matplotlib.rcParams['ytick.left']        = True
-    matplotlib.rcParams['xtick.major.width'] = 1
-    matplotlib.rcParams['ytick.major.width'] = 1
-    matplotlib.rcParams['xtick.color']       = '.15'
-    matplotlib.rcParams['ytick.color']       = '.15'
-    matplotlib.rcParams['xtick.major.size']  = 3
-    matplotlib.rcParams['ytick.major.size']  = 3
-    matplotlib.rcParams['font.size']         = 14
-    matplotlib.rcParams['axes.titlesize']    = 14
-    matplotlib.rcParams['axes.labelsize']    = 13
-    matplotlib.rcParams['legend.fontsize']   = 14
-    matplotlib.rcParams['legend.frameon']    = False
-    matplotlib.rcParams['xtick.labelsize']   = 13
-    matplotlib.rcParams['ytick.labelsize']   = 13
+    mpl.rcParams['xtick.bottom']      = True
+    mpl.rcParams['ytick.left']        = True
+    mpl.rcParams['xtick.major.width'] = 1
+    mpl.rcParams['ytick.major.width'] = 1
+    mpl.rcParams['xtick.color']       = '.15'
+    mpl.rcParams['ytick.color']       = '.15'
+    mpl.rcParams['xtick.major.size']  = 3
+    mpl.rcParams['ytick.major.size']  = 3
+    mpl.rcParams['font.size']         = 14
+    mpl.rcParams['axes.titlesize']    = 14
+    mpl.rcParams['axes.labelsize']    = 13
+    mpl.rcParams['legend.fontsize']   = 14
+    mpl.rcParams['legend.frameon']    = False
+    mpl.rcParams['xtick.labelsize']   = 13
+    mpl.rcParams['ytick.labelsize']   = 13
