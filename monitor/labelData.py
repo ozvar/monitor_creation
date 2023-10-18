@@ -6,30 +6,27 @@ from datasets import load_gtsrb, load_cifar
 from parameters import *
 
 
-def _sortfunc(j: int) -> int:
+def _sortfunc(j: str) -> int:
     el = 0
-    if len(j) == 22:
-        el = int(j[17])
-    if len(j) == 23:
-        el = int(j[17:19])
-    if len(j) == 24:
-        el = int(j[17:20])
+    # Extract the number portion from the string
+    num_str = j.split('data')[-1].split('.npy')[0]
+    if num_str.isdigit():
+        el = int(num_str)
     return el
 
 
-def computePerformance (model: tf.keras.models, data_dir: str, labels: pd.DataFrame ) -> np.array :
-    i = 0
-    list_files = glob.glob(os.path.join(data_dir, '*.npy'))
+def computePerformance(model: tf.keras.models, data_dir: str, labels: pd.DataFrame) -> np.array:
+    list_files = [f for f in glob.glob(os.path.join(data_dir, '*.npy')) 
+                  if os.path.basename(f).startswith('data')]
     accuracy = np.zeros(len(list_files))
     list_files.sort(key=_sortfunc)
-    for filename in list_files:
+    for i, filename in enumerate(list_files):
+        print(filename)
         data = np.load(filename)
         per = model.evaluate(data, labels)
         accuracy[i] = per[1]
-        print(filename)
-        i += 1
+    
     return accuracy
-
 
 def labelDataset (accuracy : np.array, label : np.array) -> list:
 
