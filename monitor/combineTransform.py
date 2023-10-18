@@ -3,17 +3,18 @@ import os
 from PIL import Image
 from datasets import load_gtsrb, load_cifar 
 from transforms import haze, increase_contrast, gaussianblureps
-from parameters import TRANSF, DATA_DIR
+from parameters import TRANSF, EPS_SCALARS, DATA_DIR
 
 
-def combinatorial_transf(eps: list) -> list:
+def combinatorial_transf(eps: list, scalars: list) -> list:
+    eps = np.array(eps)
     for i in range(len(eps)):
         if i == 0:
-            haze = eps[i]
+            haze = scalars[i]*eps[i]
         elif i == 1:
-            blur = eps[i]
+            blur = scalars[i]*eps[i]
         elif i == 2:
-            contrast = eps[i]
+            contrast = scalars[i]*eps[i]
     combprod = []
     for h in haze:
         for b in blur:
@@ -39,16 +40,18 @@ def create_dataset(data: np.array, transf: list) -> np.array:
 def create_all_datasets(data: np.array, allcombtransf: list, out_dir: str):
     for i in range(len(allcombtransf)):
         newdata = create_dataset(data, allcombtransf[i])
-        print(allcombtransf[i])
-        print(i)
-        np.save(os.path.join(out_dir, f'data{i}.npy', newdata))
+        np.save(os.path.join(out_dir, f'data{i}.npy'), newdata)
 
 
-def gen_datasets_from_transforms(transf: list, dataset: str, out_dir: str):
+def gen_datasets_from_transforms(
+        transf: list,
+        eps_scalars: list,
+        dataset: str,
+        out_dir: str
+        ):
     # hard coding number of influencing factors for now
     alltransf = [transf]*3
-    combprod = combinatorial_transf(alltransf)
-    print(combprod)
+    combprod = combinatorial_transf(eps=alltransf, scalars=eps_scalars)
     # preparing for option to train on CIFAR too
     if dataset == 'gtsrb': 
         [X_train, y_train, X_test, y_test, labels] = load_gtsrb()

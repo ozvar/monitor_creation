@@ -3,7 +3,9 @@
 /data/**/*.p
 !/data/**/*.zip
 !/data/**/*.tar.gz
-/transformations
+/transformations/data*
+!/transformations/accuracy.npy
+!/transformations/labDatasets.npy
 
 # pickled data 
 *.pickle
