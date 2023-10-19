@@ -5,6 +5,7 @@ import matplotlib as mpl
 import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import seaborn as sns
+from typing import Dic
 
 
 # configure pandas table display
@@ -46,3 +47,32 @@ def sns_styleset():
     mpl.rcParams['legend.frameon']    = False
     mpl.rcParams['xtick.labelsize']   = 13
     mpl.rcParams['ytick.labelsize']   = 13
+
+
+def split_by_factor(
+    transf: np.array,
+    accuracies: np.array,
+    transf_factors: Dict[str, float],
+    factor: str) -> np.array:
+
+    if factor not in transf_factors:
+        raise ValueError(f'Invalid transformation factor provided. Valid factors are {list(transf_factors.keys())}')
+
+    col = list(transf_factors.keys()).index(factor)
+    
+    transf = np.vstack(transf)
+    sorted_indexes = np.argsort(transf[:, col])
+    sorted_transf = transf[sorted_indexes]
+    sorted_acc = accuracies[sorted_indexes]
+    # join epsilon arrays and accuracies
+    sorted_acc = sorted_acc[:, np.newaxis]
+    data = np.hstack((sorted_transf, sorted_acc))
+    
+    unique_factor_vals = np.unique(sorted_transf[:, col])
+    
+    split_eps = [data[data[:, col] == contrast] for contrast in unique_factor_vals]
+
+    return split_eps
+
+
+
