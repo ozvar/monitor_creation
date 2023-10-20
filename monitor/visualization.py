@@ -5,7 +5,7 @@ import matplotlib as mpl
 import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import seaborn as sns
-from typing import Dic
+from typing import Dict
 
 
 # configure pandas table display
@@ -75,4 +75,37 @@ def split_by_factor(
     return split_eps
 
 
+def accuracy_heatmaps(
+    transf: list,
+    accuracies: np.array,
+    transf_factors: Dict[str, float],
+    factor: str,
+    fig_dir: str):
 
+    split_eps = split_by_factor(
+        transf=transf,
+        accuracies=accuracies,
+        transf_factors=transf_factors,
+        factor=factor
+    )
+    # define column/fig labels
+    labels = list(TRANSF_FACTORS.keys())
+    labels.append('accuracy')
+    # generate dataframe and plot for each unique epsilon value
+    for i in range(len(EPSILONS)):
+        df = pd.DataFrame(split_eps[i], columns=labels)
+        df = df.round(2)
+        factor_val = df[factor][0].round(1)
+        print(df[:3])
+        df.drop(columns=[factor], inplace=True)
+        # produce heatmap
+        heatmap_df = df.pivot(df.columns[0], df.columns[1], df.columns[2])
+        ax = sns.heatmap(heatmap_df, annot=False, vmin=0, vmax=1, cbar_kws={'label': 'Accuracy'})
+        ax.invert_yaxis()
+        plt.title(f'{factor.capitalize()} = {factor_val}')
+        plt.xlabel(df.columns[0].capitalize())
+        plt.ylabel(df.columns[1].capitalize())
+        # save and close
+        fig_name = f'epsilons_accuracy_heatmap_{factor}_is_{factor_val}.png'
+        plt.savefig(os.path.join(fig_dir, fig_name))
+        plt.close()
