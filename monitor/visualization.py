@@ -104,8 +104,8 @@ def accuracy_heatmaps(
         ax = sns.heatmap(heatmap_df, annot=False, vmin=0, vmax=1, cbar_kws={'label': 'Accuracy'})
         ax.invert_yaxis()
         plt.title(f'{factor.capitalize()} = {factor_val}')
-        plt.xlabel(df.columns[0].capitalize())
-        plt.ylabel(df.columns[1].capitalize())
+        plt.xlabel(df.columns[1].capitalize())
+        plt.ylabel(df.columns[0].capitalize())
         # save and close
         fig_name = f'epsilons_accuracy_heatmap_{factor}_is_{factor_val}.png'
         plt.savefig(os.path.join(fig_dir, fig_name))
