@@ -79,6 +79,7 @@ def accuracy_heatmaps(
     transf: list,
     accuracies: np.array,
     transf_factors: Dict[str, float],
+    epsilons: list,
     factor: str,
     fig_dir: str):
 
@@ -89,10 +90,10 @@ def accuracy_heatmaps(
         factor=factor
     )
     # define column/fig labels
-    labels = list(TRANSF_FACTORS.keys())
+    labels = list(transf_factors.keys())
     labels.append('accuracy')
     # generate dataframe and plot for each unique epsilon value
-    for i in range(len(EPSILONS)):
+    for i in range(len(epsilons)):
         df = pd.DataFrame(split_eps[i], columns=labels)
         df = df.round(2)
         factor_val = df[factor][0].round(1)
