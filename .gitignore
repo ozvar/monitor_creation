@@ -1,4 +1,3 @@
-// write a git ignore for a new python project, also exclude .pickle files and the modifieddata directory
 # Datasets
 /data/**/*.p
 !/data/**/*.zip
@@ -25,6 +24,10 @@ venv
 /env.bak
 /venv.bak
 /.python-version
+
+# Weights & Biases
+wandb/
+wandb-metadata.json
 
 # IDEs
 .vscode
