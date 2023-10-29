@@ -4,7 +4,6 @@ import pickle
 import typing
 import tensorflow as tf
 from sklearn.model_selection import KFold
-from parameters import MODEL_DIR
 
 PICKLE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data.pickle')
 

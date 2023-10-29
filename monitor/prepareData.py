@@ -4,7 +4,6 @@ import typing
 import random
 import pickle
 from tensorflow.keras.utils import to_categorical
-from parameters import DATA_DIR, DATASET
 
 def countSamplesClasses(labData: list, numClasses: int) -> np.array:
     countClasses = np.zeros(numClasses)
