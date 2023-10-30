@@ -3,12 +3,12 @@ import os
 import pickle
 import typing
 import tensorflow as tf
+from pathlib import Path
 from sklearn.model_selection import KFold
 
-PICKLE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data.pickle')
 
-def loadData() -> typing.Tuple[np.array, np.array, np.array, np.array]:
-    with open(PICKLE_PATH, 'rb') as f:
+def loadData(data_dir: str) -> typing.Tuple[np.array, np.array, np.array, np.array]:
+    with open(data_dir / 'data.pickle', 'rb') as f:
         [trainX, trainY, testX, testY] = pickle.load(f)
     return trainX, trainY, testX, testY
 
@@ -28,8 +28,8 @@ def create_model():
     )
 
 
-def trainMonitor(model_dir: str, k_fold: int, train: bool):
-    [trainX, trainY, testX, testY] = loadData()
+def trainMonitor(model_dir: str, data_dir: str, k_fold: int, train: bool):
+    [trainX, trainY, testX, testY] = loadData(data_dir)
     if train:
         for kfold, (train, test) in enumerate(KFold(n_splits=k_fold,
                                     shuffle=True).split(trainX, trainY)):
