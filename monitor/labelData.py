@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os, glob
 import pandas as pd
+from pathlib import Path
 from datasets import load_gtsrb, load_cifar 
 from parameters import *
 
@@ -44,7 +45,7 @@ def labelDataset (accuracy : np.array, label : np.array) -> list:
     return labData
 
 
-def compute_and_save_results(model_dir: Path, dataset: str, data_dir: Path, acc_bounds: list):
+def compute_and_save_accuracies(model_dir: Path, dataset: str, data_dir: Path, acc_bounds: list):
     model = tf.keras.models.load_model(model_dir / dataset / MODEL)
 
     # Load data based on the dataset name
