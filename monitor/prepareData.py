@@ -3,19 +3,21 @@ import os
 import typing
 import random
 import pickle
+from pathlib import Path
 from tensorflow.keras.utils import to_categorical
 
-def countSamplesClasses(labData: list, numClasses: int) -> np.array:
-    countClasses = np.zeros(numClasses)
+
+def count_samples_classes(labData: list, num_classes: int) -> np.array:
+    count_classes = np.zeros(num_classes)
     for el in labData:
         i = el[1]
-        countClasses[int(i)] += 1
-    return countClasses
+        count_classes[int(i)] += 1
+    return count_classes
 
 
-def findIndexes(labData: list, cl: int)-> np.array:
-    numSamples = countSamplesClasses(labData, 3)
-    ind = np.zeros(int(numSamples[cl]))
+def find_indexes(labData: list, cl: int, num_classes: int)-> np.array:
+    num_samples = count_samples_classes(labData, num_classes)
+    ind = np.zeros(int(num_samples[cl]))
     j = 0
     for i in range(len(labData)):
         if labData[i][1] == cl:
@@ -24,7 +26,7 @@ def findIndexes(labData: list, cl: int)-> np.array:
     return ind
 
 
-def findsamples (ind: np.array, num_ind_tr: int, num_ind_test: int) -> typing.Tuple[np.array, np.array]:
+def find_samples (ind: np.array, num_ind_tr: int, num_ind_test: int) -> typing.Tuple[np.array, np.array]:
     indexes_tr = np.full(num_ind_tr, -1)
     indexes_test = np.full(num_ind_test, -1)
     for i in range(num_ind_tr):
@@ -40,12 +42,15 @@ def findsamples (ind: np.array, num_ind_tr: int, num_ind_test: int) -> typing.Tu
     return indexes_tr, indexes_test
 
 
-def concSamples (ind: np.array) -> np.array:
-    for i in range(len(ind)):
+def conc_samples(data_dir: str, ind: np.array) -> np.array:
+    for i, idx in enumerate(ind):
+        file_path = data_dir / f"data{int(idx)}.npy"
+        loaded_data = np.load(file_path)
         if i == 0:
-            im = np.load(os.path.join('modifieddata', 'data{int(ind[i])}.npy'))
+            im = loaded_data
         else:
-            im = np.concatenate((im ,  np.load(os.path.join('modifieddata', 'data{int(ind[i])}.npy'))))
+            im = np.concatenate((im, loaded_data))
+            
     return im
 
 
@@ -65,50 +70,47 @@ def shuffle_arrays(arrays: list, set_seed=-1):
         rstate.shuffle(arr)
 
 
-if __name__ == "__main__":
-    labData = np.load(os.path.join(DATA_DIR, 'labDatasets.npy'))
-    ind1 = findIndexes(labData, 0)
-    ind2 = findIndexes(labData, 1)
-    ind3 = findIndexes(labData, 2)
-    ntrainind = 10
-    ntestind=2
-    [indexestr1, indexestest1] = findsamples(ind1, ntrainind, ntestind)
-    print(indexestr1)
-    print(indexestest1)
-    [indexestr2, indexestest2] = findsamples(ind2, ntrainind, ntestind)
-    [indexestr3, indexestest3] = findsamples(ind3, ntrainind, ntestind)
-    trainind= np.concatenate((indexestr1, indexestr2, indexestr3))
-    testind= np.concatenate((indexestest1, indexestest2, indexestest3))
-    imtr1 = concSamples(indexestr1)
-    imtr2 = concSamples(indexestr2)
-    imtr3 = concSamples(indexestr3)
-    labeltr1 = np.zeros(len(imtr1))
-    labeltr2 = np.ones(len(imtr2))
-    labeltr3 = np.zeros(len(imtr3))
-    for i in range(len(imtr3)):
-        labeltr3[i] = 2
-    imtest1 = concSamples(indexestest1)
-    imtest2 = concSamples(indexestest2)
-    imtest3 = concSamples(indexestest3)
-    labeltest1 = np.zeros(len(imtest1))
-    labeltest2 = np.ones(len(imtest2))
-    labeltest3 = np.zeros(len(imtest3))
-    for i in range(len(imtest3)):
-        labeltest3[i] = 2
-    trainX = np.concatenate((imtr1, imtr2, imtr3))
-    trainY = to_categorical(np.concatenate((labeltr1, labeltr2, labeltr3)))
-    testX = np.concatenate((imtest1, imtest2, imtest3))
-    testY = to_categorical(np.concatenate((labeltest1, labeltest2, labeltest3)))
+def process_class(class_idx, data_dir, labData, ntrainind, ntestind, num_classes):
+    indexes_train, indexes_test = find_samples(find_indexes(labData, class_idx, num_classes), ntrainind, ntestind)
+    images_train = conc_samples(data_dir, indexes_train)
+    labels_train = np.full(len(images_train), class_idx)
+    images_test = conc_samples(data_dir, indexes_test)
+    labels_test = np.full(len(images_test), class_idx)
+
+    return (images_train, labels_train, images_test, labels_test, indexes_train, indexes_test)
+
+
+def prepare_and_save_data(data_dir, labData, ntrainind, ntestind, acc_bounds):
+    # determine the number of classes based on acc_bounds 
+    num_classes = len(acc_bounds) + 1
+
+    # process data for each class
+    all_trainX, all_trainY, all_testX, all_testY, all_trainind, all_testind = [], [], [], [], [], []
+
+    for class_idx in range(num_classes):
+        imtr, labeltr, imtest, labeltest, indexestr, indexestest = process_class(class_idx, data_dir, labData, ntrainind, ntestind, num_classes)
+        all_trainX.append(imtr)
+        all_trainY.append(labeltr)
+        all_testX.append(imtest)
+        all_testY.append(labeltest)
+        all_trainind.append(indexestr)
+        all_testind.append(indexestest)
+
+    # concatenate all data
+    trainX = np.concatenate(all_trainX)
+    trainY = to_categorical(np.concatenate(all_trainY))
+    testX = np.concatenate(all_testX)
+    testY = to_categorical(np.concatenate(all_testY))
+    trainind = np.concatenate(all_trainind)
+    testind = np.concatenate(all_testind)
+
     shuffle_arrays([trainX, trainY])
     shuffle_arrays([testX, testY])
+
     data = [trainX, trainY, testX, testY]
     indexes = [trainind, testind]
-    with open('data.pickle', 'wb') as f:
-        pickle.dump(data, f)
-    with open('indexes.pickle', 'wb') as f:
-        pickle.dump(indexes, f)
 
-    #print(labData)
-    #numClasses = 3
-    #count = countSamplesClasses(labData, numClasses)
-    #print(count)
+    with open(data_dir / 'data.pickle', 'wb') as f:
+        pickle.dump(data, f)
+    with open(data_dir / 'indexes.pickle', 'wb') as f:
+        pickle.dump(indexes, f)

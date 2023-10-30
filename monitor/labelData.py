@@ -28,6 +28,7 @@ def computePerformance(model: tf.keras.models, data_dir: str, labels: pd.DataFra
     
     return accuracy
 
+
 def labelDataset (accuracy : np.array, label : np.array) -> list:
 
     labData=[]
@@ -43,18 +44,21 @@ def labelDataset (accuracy : np.array, label : np.array) -> list:
     return labData
 
 
-if __name__ == "__main__":
-    model= tf.keras.models.load_model(os.path.join(MODEL_DIR, DATASET, MODEL))
-    # preparing for option to train on CIFAR too
-    if dataset == 'gtsrb': 
-        [X_train, y_train, X_test, y_test, labels] = load_gtsrb()
-    print(y_test)
+def compute_and_save_results(model_dir: Path, dataset: str, data_dir: Path, acc_bounds: list):
+    model = tf.keras.models.load_model(model_dir / dataset / MODEL)
+
+    # Load data based on the dataset name
+    if dataset == 'gtsrb':
+        X_train, y_train, X_test, y_test, labels = load_gtsrb()
+        print(y_test)
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset}")
+
+    # compute performance
     acc = computePerformance(model, data_dir, y_test)
-    np.save(os.path.join(DATA_DIR, 'accuracy'), acc)
-    acc = np.load(os.path.join(DATA_DIR, 'accuracy.npy'))
-    labels = np.array(ACC_BOUNDS)
+    np.save(data_dir / 'accuracy', acc)
+
+    # label datasets 
+    labels = np.array(acc_bounds)
     labData = labelDataset(acc, labels)
-    print(labData[0][1])
-    print(acc)
-    np.save(os.path.join(DATA_DIR, 'labDatasets'), labData)
-    print(labData)
+    np.save(data_dir / 'labDatasets', labData)
