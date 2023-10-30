@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from typing import Dict
 from scipy.special import softmax
 
 def _set_tf_log_level(level:int=1):
@@ -53,6 +54,19 @@ def _ms_to_human(ms:int) -> str:
     output = f'{minutes} minutes, {output}' if minutes or hours else output
     output = f'{hours} hours, {output}' if hours else output
     return output
+
+
+def create_out_dirs(transf_factors:Dict[str, float]):
+    sub_dir = "_".join([f"{key}_{value}" for key, value in transf_factors.items()])
+    base_dir = Path('results') / sub_dir
+    
+    fig_dir = base_dir / 'figures'
+    transf_dir = base_dir / 'transformations'
+    
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    transf_dir.mkdir(parents=True, exist_ok=True)
+    
+    return base_dir, fig_dir, transf_dir
 
 
 def remove_softmax_activation(model_path:str, save_path:str='') -> tf.keras.Model:
