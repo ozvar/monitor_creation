@@ -107,6 +107,6 @@ def accuracy_heatmaps(
         plt.xlabel(df.columns[1].capitalize())
         plt.ylabel(df.columns[0].capitalize())
         # save and close
-        fig_name = f'epsilons_accuracy_heatmap_{factor}_is_{factor_val}.png'
-        plt.savefig(os.path.join(fig_dir, fig_name))
+        fig_name = f'epsilons_accuracy_heatmap_{factor}_constant_at_{factor_val}.png'
+        plt.savefig(os.path.join(fig_dir, fig_name), bbox_inches='tight')
         plt.close()
