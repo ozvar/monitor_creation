@@ -80,7 +80,9 @@ def process_class(class_idx, data_dir, labData, ntrainind, ntestind, num_classes
     return (images_train, labels_train, images_test, labels_test, indexes_train, indexes_test)
 
 
-def prepare_and_save_data(data_dir, labData, ntrainind, ntestind, acc_bounds):
+def prepare_and_save_data(data_dir, ntrainind, ntestind, acc_bounds):
+    # load dataset labels
+    labData = np.load(data_dir / 'labDatasets')
     # determine the number of classes based on acc_bounds 
     num_classes = len(acc_bounds) + 1
 
