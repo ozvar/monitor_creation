@@ -28,7 +28,7 @@ def create_model():
     )
 
 
-def trainMonitor(model_dir: str, data_dir: str, k_fold: int, train: bool):
+def trainMonitor(model_dir: str, data_dir: str, runs: int, k_fold: int, train: bool):
     [trainX, trainY, testX, testY] = loadData(data_dir)
     if train:
         for kfold, (train, test) in enumerate(KFold(n_splits=k_fold,
@@ -54,20 +54,19 @@ def trainMonitor(model_dir: str, data_dir: str, k_fold: int, train: bool):
             # run the model
             seq_model.fit(trainX[train], trainY[train],
                     batch_size=128, epochs=2, validation_data=(trainX[test], trainY[test]))
-            seq_model.save_weights(os.path.join(model_dir, 'monitor', f'wg_{kfold}_2.h5'))
+            seq_model.save_weights(model_dir / 'monitor' / f'wg_{kfold}_2.h5')
     else:
-        model = create_model()
-        model.compile(
-            loss=tf.keras.losses.CategoricalCrossentropy(),
-            metrics=tf.keras.metrics.CategoricalAccuracy(),
-            optimizer=tf.keras.optimizers.Adam())
+        for i in range(kfold):
+            model = create_model()
+            model.compile(
+                loss=tf.keras.losses.CategoricalCrossentropy(),
+                metrics=tf.keras.metrics.CategoricalAccuracy(),
+                optimizer=tf.keras.optimizers.Adam())
 
-        print('Test Set')
-        print(testX.shape)
-        print(testY.shape)
-        model.load_weights(os.path.join(model_dir, 'monitor', f'wg_0_2.h5'))
-        print(model.evaluate(testX, testY))
-        model.load_weights(os.path.join(model_dir, 'monitor', f'wg_1_2.h5'))
-        print(model.evaluate(testX, testY))
-        model.load_weights(os.path.join(model_dir, 'monitor', f'wg_2_2.h5'))
-        print(model.evaluate(testX, testY))
+            print('Test Set')
+            print(testX.shape)
+            print(testY.shape)
+            
+            model.load_weights(model_dir / 'monitor' / f'wg_{kfold}_2.h5')
+            print(model.evaluate(testX, testY))
+            print(model.evaluate(testX, testY))
