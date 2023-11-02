@@ -10,7 +10,8 @@ from tqdm import tqdm
 
 def combinatorial_transf(
         transf_factors: Dict[str, float],
-        eps: list) -> list:
+        eps: list
+        ) -> list:
     # Convert eps to numpy array for easy scaling
     eps = np.array(eps)
     # Scale each epsilon list by the transformation scalar
@@ -26,7 +27,8 @@ def combinatorial_transf(
 def apply_combined_transf(
         transf_factors: Dict[str, float],
         image: np.array,
-        transf: list) -> np.array:
+        transf: list
+        ) -> np.array:
     keys = list(transf_factors.keys())
     for i in range(len(keys)):
         if keys[i] == 'haze':
@@ -43,7 +45,8 @@ def create_dataset(
         transf_factors: Dict[str, float],
         data: np.array,
         transf: list,
-        out_dir: str) -> np.array:
+        out_dir: str
+        ) -> np.array:
     newdata = np.empty(data.shape)
     pbar = tqdm(range(data.shape[0]), position=1, leave=False)
     for i in pbar:
@@ -59,7 +62,8 @@ def create_all_datasets(
         transf_factors: Dict[str, float], 
         data: np.array,
         allcombtransf: list,
-        out_dir: str):
+        out_dir: str
+        ):
     pbar = tqdm(range(len(allcombtransf)), position=0)
     for i in pbar:
         pbar.set_description(f'Creating dataset #{i+1}')
