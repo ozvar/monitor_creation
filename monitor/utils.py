@@ -1,9 +1,11 @@
 import os, typing, time, cv2
 import tensorflow as tf
 import numpy as np
+import logging
 import pandas as pd
 from pathlib import Path
 from typing import Dict
+from datetime import datetime
 from scipy.special import softmax
 
 def _set_tf_log_level(level:int=1):
@@ -56,17 +58,38 @@ def _ms_to_human(ms:int) -> str:
     return output
 
 
+def setup_logger(data_dir: Path, run_id: int):
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    log_filename = data_dir / f"training_log_run_{run_id+1}_{timestamp}.txt"
+    
+    # Create logger and set the level to INFO
+    logger = logging.getLogger('trainMonitorLogger')
+    logger.setLevel(logging.INFO)
+
+    # Ensure no duplicate handlers
+    if not logger.hasHandlers():
+        # Create file handler which logs INFO messages
+        file_handler = logging.FileHandler(log_filename)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger
+
+
 def create_out_dirs(transf_factors:Dict[str, float]):
     sub_dir = "_".join([f"{key}_{value}" for key, value in transf_factors.items()])
     base_dir = Path('results') / sub_dir
     
     fig_dir = base_dir / 'figures'
     transf_dir = base_dir / 'transformations'
+    monitor_dir = base_dir / 'monitors'
     
     fig_dir.mkdir(parents=True, exist_ok=True)
     transf_dir.mkdir(parents=True, exist_ok=True)
+    monitor_dir.mkdir(parents=True, exist_ok=True)
     
-    return base_dir, fig_dir, transf_dir
+    return base_dir, fig_dir, transf_dir, monitor_dir
 
 
 def remove_softmax_activation(model_path:str, save_path:str='') -> tf.keras.Model:
