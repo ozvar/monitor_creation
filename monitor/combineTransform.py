@@ -1,5 +1,6 @@
 import numpy as np
 import os
+from pathlib import Path
 from PIL import Image
 from datasets import load_gtsrb, load_cifar 
 from transforms import haze, increase_contrast, gaussianblureps
@@ -62,7 +63,7 @@ def create_all_datasets(
         transf_factors: Dict[str, float], 
         data: np.array,
         allcombtransf: list,
-        out_dir: str
+        out_dir: Path 
         ):
     pbar = tqdm(range(len(allcombtransf)), position=0)
     for i in pbar:
@@ -79,7 +80,7 @@ def gen_datasets_from_transforms(
         transf_factors: Dict[str, float],
         epsilons: list,
         dataset: str,
-        out_dir: str
+        out_dir: Path
         ):
     comb_prod = combinatorial_transf(
             transf_factors=transf_factors,
