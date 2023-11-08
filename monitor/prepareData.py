@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import gc
 import typing
 import random
@@ -36,27 +35,24 @@ def find_indexes(
     return ind
 
 
-def find_samples (
+def find_samples(
         ind: np.array,
         num_ind_tr: int,
         num_ind_test: int
         ) -> typing.Tuple[np.array, np.array]:
-    indexes_tr = np.full(num_ind_tr, -1)
-    indexes_test = np.full(num_ind_test, -1)
-    pbar = tqdm(range(num_ind_tr), position=1, leave=True)
-    for i in pbar:
-        pbar.set_description(f"Finding training sample {i+1}/{num_ind_tr}")
-        j = random.randint(0, len(ind) - 1)
-        while np.any(indexes_tr == ind[j]):
-            j = random.randint(0, len(ind) - 1)
-        indexes_tr[i] = ind[j]
-    pbar = tqdm(range(num_ind_test), position=1, leave=True)
-    for i in pbar:
-        pbar.set_description(f"Finding test sample {i+1}/{num_ind_test}")
-        j = random.randint(0, len(ind) - 1)
-        while np.any(indexes_tr == ind[j]) or np.any(indexes_test == ind[j]):
-            j = random.randint(0, len(ind) - 1)
-        indexes_test[i] = ind[j]
+
+    # Ensure the condition is met
+    if num_ind_tr + num_ind_test > len(ind):
+        raise ValueError(f"The sum of num_ind_tr ({num_ind_tr}) and num_ind_test ({num_ind_test}) exceeds the length of ind ({len(ind)}).")
+
+    # Randomly shuffle the indices
+    shuffled_indices = np.copy(ind)
+    np.random.shuffle(shuffled_indices)
+
+    # Split into training and test indices
+    indexes_tr = shuffled_indices[:num_ind_tr]
+    indexes_test = shuffled_indices[num_ind_tr:num_ind_tr + num_ind_test]
+
     return indexes_tr, indexes_test
 
 
@@ -120,6 +116,7 @@ def prepare_and_save_data(
     logger = setup_logger(out_dir, run_id)
     # load variables
     labData = np.load(transf_dir/ 'labDatasets.npy')
+    acc = np.load(transf_dir / 'accuracy.npy')
     num_classes = len(acc_bounds) + 1
     params = {
         "class_idx": None,
@@ -136,6 +133,7 @@ def prepare_and_save_data(
         pbar.set_description(f"Processing class {i+1}/{num_classes}")
         results.append(process_class(**{**params, "class_idx": i}))
     all_trainX, all_trainY, all_testX, all_testY, all_trainind, all_testind = zip(*results)
+
     trainX, trainY = np.concatenate(all_trainX), to_categorical(np.concatenate(all_trainY))
     testX, testY = np.concatenate(all_testX), to_categorical(np.concatenate(all_testY))
     trainind, testind = np.concatenate(all_trainind), np.concatenate(all_testind)
@@ -149,6 +147,20 @@ def prepare_and_save_data(
     counts = count_samples_classes(labData, num_classes)
     logger.info(f"Class boundaries: {acc_bounds}")
     logger.info(f"Number of samples per class: {counts}")
+    logger.info("Indexes of training datasets:")
+    for i in range(num_classes):
+        logger.info(f"Class {i+1}:")
+        train_acc = [acc[int(j)] for j in all_trainind[i]]
+        logger.info(f"Accuracy: {train_acc}")
+        logger.info(f"Indexes: {all_trainind[i]}")
+    logger.info("Indexes of test datasets:")
+    for i in range(num_classes):
+        logger.info(f"Class {i+1}:")
+        test_acc = [acc[int(j)] for j in all_testind[i]]
+        logger.info(f"Accuracy: {test_acc}")
+        logger.info(f"Indexes: {all_testind[i]}")
+
+
     # close the logger
     for handler in logger.handlers:
         handler.close()
