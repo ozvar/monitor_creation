@@ -60,7 +60,9 @@ def _ms_to_human(ms:int) -> str:
 
 def setup_logger(data_dir: Path, run_id: int):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    log_filename = data_dir / f"training_log_run_{run_id+1}_{timestamp}.txt"
+    log_dir = data_dir / "logs"
+    os.makedirs(log_dir, exist_ok=True)
+    log_filename = log_dir / f"training_log_run_{run_id+1}_{timestamp}.txt"
     
     # Create logger and set the level to INFO
     logger = logging.getLogger('trainMonitorLogger')
@@ -70,7 +72,7 @@ def setup_logger(data_dir: Path, run_id: int):
     if not logger.hasHandlers():
         # Create file handler which logs INFO messages
         file_handler = logging.FileHandler(log_filename)
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(message)s')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
