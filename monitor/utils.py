@@ -126,7 +126,7 @@ def normalize(X:np.array) -> np.array:
     return X / 255.0
 
 
-def generate_images_from_datset(
+def generate_images_from_dataset(
         image_dir: Path,
         data_set: str,
         indexes: list,
