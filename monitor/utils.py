@@ -4,6 +4,7 @@ import numpy as np
 import logging
 import pandas as pd
 from pathlib import Path
+from PIL import Image
 from typing import Dict
 from datetime import datetime
 from scipy.special import softmax
@@ -124,6 +125,35 @@ def normalize(X:np.array) -> np.array:
         np.array: normalized images
     '''
     return X / 255.0
+
+
+def generate_images_from_datset(
+        image_dir: Path,
+        data_set: str,
+        indexes: list,
+        image_size: typing.Tuple[int, int],
+        out_dir: Path
+        ) -> None:
+    data = np.load(image_dir / data_set)
+    for im in indexes:
+        arr = data[im]
+        img = image_array_to_png(arr, image_size)
+        im_name = f'{data_set}_{im}.png'
+        img.save(out_dir / im_name)
+
+
+def image_array_to_png(
+        arr: np.array,
+        image_size: typing.Tuple[int, int],
+        ):
+    '''Generates .png from np.array of RGB values'''
+    arr = resize_image(arr, image_size) 
+    arr = arr * 255
+    arr = arr.astype(np.uint8)
+    img = Image.fromarray(arr, 'RGB')
+
+    return img
+
 
 def resize_image(image:np.array, size:typing.Tuple[int, int]) -> np.array:
     '''resizes an image

@@ -1,4 +1,3 @@
-
 import sys
 import numpy as np
 import scipy.stats as st
@@ -20,6 +19,33 @@ from PIL import Image, ImageEnhance
 # Returns:
 #     (np.array) - the transformed image
 # ----------------------------------------------------------------------------------------------
+
+def impulse_noise(image:np.array, epsilon:float) -> np.array:
+    '''Adds salt and pepper (impulse) noise to an image
+
+    Args:
+        image (np.array): The input image
+        epsilon (float): amount of transform
+
+    Returns:
+        [np.array]: image with haze
+    '''    
+    # Calculate the number of pixels to be altered based on epsilon
+    total_pixels = image.size
+    num_noise_pixels = int(epsilon * total_pixels)
+    # Generate noise for salt and pepper separately
+    num_salt = num_noise_pixels // 2
+    num_pepper = num_noise_pixels - num_salt
+    # Get random pixel indices for salt and pepper noise
+    pepper_indices = (np.random.choice(image.shape[0], num_pepper),
+                      np.random.choice(image.shape[1], num_pepper))
+    salt_indices = (np.random.choice(image.shape[0], num_salt),
+                    np.random.choice(image.shape[1], num_salt))
+    # Apply noise
+    image[pepper_indices] = 0
+    image[salt_indices] = 1
+
+    return image 
 
 def haze(image:np.array, epsilon:float) -> np.array:
     '''Applies haze transform to an image
