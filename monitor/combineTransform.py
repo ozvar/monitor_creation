@@ -38,6 +38,8 @@ def apply_combined_transf(
             image = increase_contrast(image, epsilon=transf[i])
         elif keys[i] == 'blur':
             image = gaussianblureps(image, epsilon=transf[i])
+        elif keys[i] == 'salt_and_pepper':
+            image = impulse_noise(image, epsilon=transf[i])
 
     return image
 
