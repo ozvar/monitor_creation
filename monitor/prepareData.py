@@ -111,9 +111,10 @@ def prepare_and_save_data(
         ntrainind: int,
         ntestind: int,
         acc_bounds: list,
-        run_id: int):
+        run_id: int,
+        log_label: str='data'):
     # setup logger
-    logger = setup_logger(out_dir, run_id)
+    logger = setup_logger(out_dir, run_id, log_label)
     # load variables
     labData = np.load(transf_dir/ 'labDatasets.npy')
     acc = np.load(transf_dir / 'accuracy.npy')

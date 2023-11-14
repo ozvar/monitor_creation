@@ -59,12 +59,11 @@ def _ms_to_human(ms:int) -> str:
     return output
 
 
-def setup_logger(data_dir: Path, run_id: int):
+def setup_logger(data_dir: Path, run_id: int, log_label: str):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     log_dir = data_dir / "logs"
     os.makedirs(log_dir, exist_ok=True)
-    log_filename = log_dir / f"training_log_run_{run_id+1}_{timestamp}.txt"
-    
+    log_filename = log_dir / f"run_{run_id+1}_{log_label}_{timestamp}.txt"
     # Create logger and set the level to INFO
     logger = logging.getLogger('trainMonitorLogger')
     logger.setLevel(logging.INFO)
