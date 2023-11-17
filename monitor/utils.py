@@ -86,12 +86,14 @@ def create_out_dirs(transf_factors:Dict[str, float]):
     fig_dir = base_dir / 'figures'
     transf_dir = base_dir / 'transformations'
     monitor_dir = base_dir / 'monitors'
+    image_dir = base_dir / 'image_examples'
     
     fig_dir.mkdir(parents=True, exist_ok=True)
     transf_dir.mkdir(parents=True, exist_ok=True)
     monitor_dir.mkdir(parents=True, exist_ok=True)
+    image_dir.mkdir(parents=True, exist_ok=True)
     
-    return base_dir, fig_dir, transf_dir, monitor_dir
+    return base_dir, fig_dir, transf_dir, monitor_dir, image_dir
 
 
 def remove_softmax_activation(model_path:str, save_path:str='') -> tf.keras.Model:
@@ -127,17 +129,18 @@ def normalize(X:np.array) -> np.array:
 
 
 def generate_images_from_dataset(
-        image_dir: Path,
+        transf_dir: Path,
         data_set: str,
+        acc_class: str,
         indexes: list,
         image_size: typing.Tuple[int, int],
         out_dir: Path
         ) -> None:
-    data = np.load(image_dir / data_set)
+    data = np.load(transf_dir / data_set)
     for im in indexes:
         arr = data[im]
         img = image_array_to_png(arr, image_size)
-        im_name = f'{data_set}_{im}.png'
+        im_name = f'{acc_class}_{data_set}_{im}.png'
         img.save(out_dir / im_name)
 
 
