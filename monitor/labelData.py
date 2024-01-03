@@ -63,7 +63,7 @@ def compute_and_save_accuracies(
     model = tf.keras.models.load_model(model_dir / dataset / model_name)
     # load data based on the dataset name
     if dataset == 'gtsrb':
-        X_train, y_train, X_test, y_test, labels = load_gtsrb()
+        _, _, _, y_test, labels = load_gtsrb()
     else:
         raise ValueError(f"Unsupported dataset: {dataset}")
     # compute performance
