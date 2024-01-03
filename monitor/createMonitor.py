@@ -20,20 +20,30 @@ def create_model():
         [
             tf.keras.Input(shape=(32, 32, 3)),
             tf.keras.layers.Conv2D(16, 3, activation='relu'),
+            tf.keras.layers.SpatialDroput2D(0.1),
             tf.keras.layers.Conv2D(32, 3, activation='relu'),
+            tf.keras.layers.SpatialDroput2D(0.1),
             tf.keras.layers.Conv2D(64, 3, activation='relu'),
+            tf.keras.layers.SpatialDroput2D(0.1),
             tf.keras.layers.Conv2D(128, 3, activation='relu'),
+            tf.keras.layers.SpatialDroput2D(0.1),
             tf.keras.layers.Conv2D(256, 3, activation='relu'),
+            tf.keras.layers.SpatialDroput2D(0.1),
             tf.keras.layers.GlobalAveragePooling2D(),
             tf.keras.layers.Dense(3, activation='softmax')
         ]
     )
 
 
+def init_bias(model: tf.keras.models) -> None:
+    pass
+        
+
 def train_monitor(
         model_dir: str,
         data_dir: Path,
         k_folds: int,
+        batch_size: int,
         run_id: int,
         log_label: str='train'):
     # initialize logging and paths
@@ -67,7 +77,7 @@ def train_monitor(
 
         # run the model
         seq_model.fit(trainX[train_idx], trainY[train_idx],
-                batch_size=64,
+                batch_size=batch_size,
                 epochs=2,
                 validation_data=(trainX[test_idx], trainY[test_idx]))
         seq_model.save_weights(model_dir / f'wg_{k+1}_2.h5')
@@ -86,7 +96,7 @@ def train_monitor(
         logger.removeHandler(handler)
 
     # clear memory
-    del trainX, trainY, model
+    del trainX, trainY, seq_model
     tf.keras.backend.clear_session()
     gc.collect()
 
