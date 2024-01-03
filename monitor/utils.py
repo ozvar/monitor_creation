@@ -4,8 +4,9 @@ import numpy as np
 import logging
 import pandas as pd
 from pathlib import Path
+from tqdm import tqdm
 from PIL import Image
-from typing import Dict
+from typing import Dict, Union
 from datetime import datetime
 from scipy.special import softmax
 
@@ -63,7 +64,7 @@ def setup_logger(data_dir: Path, run_id: int, log_label: str):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     log_dir = data_dir / "logs"
     os.makedirs(log_dir, exist_ok=True)
-    log_filename = log_dir / f"run_{run_id+1}_{log_label}_{timestamp}.txt"
+    log_filename = log_dir / f"{timestamp}_run_{run_id+1}_{log_label}.txt"
     # Create logger and set the level to INFO
     logger = logging.getLogger('trainMonitorLogger')
     logger.setLevel(logging.INFO)
@@ -132,17 +133,46 @@ def generate_images_from_dataset(
         transf_dir: Path,
         data_set: str,
         acc_class: str,
-        indexes: list,
+        indexes: Union[list,None],
         image_size: typing.Tuple[int, int],
         out_dir: Path
         ) -> None:
     data = np.load(transf_dir / data_set)
+    if indexes == None:
+        indexes = list(range(data.shape[0]))
     for im in indexes:
         arr = data[im]
         img = image_array_to_png(arr, image_size)
         im_name = f'{acc_class}_{data_set}_{im}.png'
         img.save(out_dir / im_name)
 
+
+def generate_all_images_for_transformations(
+        transf_dir: Path,
+        image_size: typing.Tuple[int, int],
+        out_dir: Path
+        ) -> None:
+    # get class of dataset from labDatasets.npy
+    lab_data = np.load(transf_dir / 'labDatasets.npy')
+    for i, (perf, label) in enumerate(lab_data):
+        # get all datasets for class, they begin with the string "data"
+        datasets = [f for f in os.listdir(transf_dir) if f.startswith('data')]
+        # take only datasets where index i
+        # create output directory for class
+        class_label = f'class_{int(label)+1}'
+        for d in datasets:
+            print(f'Generating images for {d}...')
+            dataset_dir = out_dir / class_label / str(d).split('.')[0] 
+            os.makedirs(dataset_dir, exist_ok=True)
+            generate_images_from_dataset(
+                    transf_dir=transf_dir,
+                    data_set=d,
+                    acc_class=class_label,
+                    indexes=None,
+                    image_size=image_size,
+                    out_dir=dataset_dir
+                    )
+            
 
 def image_array_to_png(
         arr: np.array,
