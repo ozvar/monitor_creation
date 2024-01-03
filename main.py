@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     multiprocessing.set_start_method('spawn')
     gpu_devices = tf.config.experimental.list_physical_devices('GPU')
-    print("Num GPUs Available: ", gpu_devices)
+    print("Num GPUs Available: ", len(gpu_devices))
     for device in gpu_devices:
         tf.config.experimental.set_memory_growth(device, True)
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         
         pprint(exp, sort_dicts=False)
 
-        RESULTS_DIR, FIG_DIR, TRANSF_DIR, MONITOR_DIR = create_out_dirs(
+        RESULTS_DIR, FIG_DIR, TRANSF_DIR, MONITOR_DIR, IMAGE_DIR = create_out_dirs(
                 transf_factors=exp['TRANSF_FACTORS']
                 )
 
@@ -35,49 +35,54 @@ if __name__ == "__main__":
         #         out_dir=TRANSF_DIR
         #         )
 
-        compute_and_save_accuracies(
-                model_dir=exp['MODEL_DIR'],
-                dataset=exp['DATASET'],
-                model_name=exp['MODEL'],
-                data_dir=TRANSF_DIR,
-                acc_bounds=exp['ACC_BOUNDS']
-                )
+        # compute_and_save_accuracies(
+        #         model_dir=exp['MODEL_DIR'],
+        #         dataset=exp['DATASET'],
+        #         model_name=exp['MODEL'],
+        #         data_dir=TRANSF_DIR,
+        #         acc_bounds=exp['ACC_BOUNDS']
+        #         )
 
         for run in range(exp['RUNS']):
 
 
             prepare_and_save_data(
                     out_dir=RESULTS_DIR,
+                    image_dir=IMAGE_DIR,
                     transf_dir=TRANSF_DIR,
-                    ntrainind=exp['N_TRAININD'],
-                    ntestind=exp['N_TESTIND'],
+                    train_prop=exp['TRAIN_PROP'],
+                    imageind=exp['IMAGE_IND'],
                     acc_bounds=exp['ACC_BOUNDS'],
-                    run_id=run
+                    run_id=run,
                     )
 
             p = multiprocessing.Process(
-                    target=train_monitor,
-                    args=(
-                        MONITOR_DIR,    
-                        RESULTS_DIR,
-                        exp['K_FOLDS'],
-                        True,
-                        run
-                        )
-                    )
-
+                     target=train_monitor,
+                     args=(
+                         MONITOR_DIR,    
+                         RESULTS_DIR,
+                         exp['K_FOLDS'],
+                         exp['BATCH_SIZE'],
+                         run
+                         )
+                     )
+            # manage memory in multiprocessing process
             p.start()
             p.join()
-            # shut down Process
             p.terminate()
 
-            # train_monitor(
-            #     model_dir=MONITOR_DIR,
-            #     data_dir=RESULTS_DIR,
-            #     k_folds=exp['K_FOLDS'],
-            #     train_model=True,
-            #     run_id=run
-            #     )
-
+            p = multiprocessing.Process(
+                     target=test_monitor,
+                     args=(
+                         MONITOR_DIR,    
+                         RESULTS_DIR,
+                         exp['K_FOLDS'],
+                         run
+                         )
+                     )
+            # manage memory in multiprocessing process
+            p.start()
+            p.join()
+            p.terminate()
         # only run first experiment for now
         break 
