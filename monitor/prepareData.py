@@ -148,6 +148,7 @@ def prepare_and_save_data(
         acc_bounds: list,
         imageind: list,
         run_id: int,
+        seed: int,
         log_label: str='data'):
     # setup logger
     logger = setup_logger(out_dir, run_id, log_label)
@@ -168,20 +169,21 @@ def prepare_and_save_data(
         pbar.set_description(f"Processing class {i+1}/{num_classes}")
         results.append(prepare_class(**{**params, "class_idx": i}))
     all_trainX, all_trainY, all_testX, all_testY, all_trainind, all_testind = zip(*results)
-
+    # concatenate all datasets
     trainX, trainY = np.concatenate(all_trainX), to_categorical(np.concatenate(all_trainY))
     testX, testY = np.concatenate(all_testX), to_categorical(np.concatenate(all_testY))
     trainind, testind = np.concatenate(all_trainind), np.concatenate(all_testind)
-    shuffle_arrays([trainX, trainY])
-    shuffle_arrays([testX, testY])
+    # this shuffles the datasets
+    shuffle_arrays([trainX, trainY], set_seed=seed)
+    shuffle_arrays([testX, testY], set_seed=seed)
     with open(out_dir / 'data.pickle', 'wb') as f:
         pickle.dump([trainX, trainY, testX, testY], f)
     with open(out_dir / 'indexes.pickle', 'wb') as f:
         pickle.dump([trainind, testind], f)
-    # describe class boundaries and number of samples per class
+    # describe class boundaries and number of datasets per class
     counts = count_samples_classes(lab_data, num_classes)
     logger.info(f"Class boundaries: {acc_bounds}")
-    logger.info(f"Number of samples per class: {counts}")
+    logger.info(f"Number of datasets per class: {counts}")
     # generate images from training and test datasets
     for i, inds in enumerate(all_trainind):
         run_image_dir = image_dir / f'run_{run_id+1}_train'
