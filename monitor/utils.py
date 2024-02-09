@@ -1,4 +1,5 @@
 import os, typing, time, cv2
+import random
 import tensorflow as tf
 import numpy as np
 import logging
@@ -60,11 +61,21 @@ def _ms_to_human(ms:int) -> str:
     return output
 
 
+def reset_random_seeds(seed: int):
+   os.environ['PYTHONHASHSEED']=str(seed)
+   tf.random.set_seed(seed)
+   np.random.seed(seed)
+   random.seed(seed)
+
+
 def setup_logger(data_dir: Path, run_id: int, log_label: str):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     log_dir = data_dir / "logs"
     os.makedirs(log_dir, exist_ok=True)
-    log_filename = log_dir / f"{timestamp}_run_{run_id+1}_{log_label}.txt"
+    if run_id == -1:
+        log_filename = log_dir / f"{timestamp}_EXPERIMENT_PARAMETERS.txt"
+    else:
+        log_filename = log_dir / f"{timestamp}_run_{run_id+1}_{log_label}.txt"
     # Create logger and set the level to INFO
     logger = logging.getLogger('trainMonitorLogger')
     logger.setLevel(logging.INFO)
