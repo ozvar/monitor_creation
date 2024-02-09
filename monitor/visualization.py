@@ -5,7 +5,10 @@ import matplotlib as mpl
 import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import seaborn as sns
-from typing import Dict
+from pathlib import Path
+from sklearn.metrics import confusion_matrix
+from typing import Dict, List
+from datetime import datetime
 
 
 # configure pandas table display
@@ -75,6 +78,20 @@ def split_by_factor(
     return split_eps
 
 
+def plot_metrics(history, run_id, k_fold, fig_dir, metric='loss'):
+    print(history)
+    print(history.history[metric])
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    plt.plot(history.history[metric], label=f'Training {metric}')
+    plt.plot(history.history[f'val_{metric}'], label=f'Validation {metric}')
+    plt.ylabel(metric.capitalize())
+    plt.xlabel('Epoch')
+    plt.legend()
+    plot_path = fig_dir / f'{timestamp}_run_{run_id+1}_kfold_{k_fold}_{metric}.png'
+    plt.savefig(plot_path)
+    plt.close()
+
+
 def accuracy_heatmaps(
     transf: list,
     accuracies: np.array,
@@ -110,3 +127,54 @@ def accuracy_heatmaps(
         fig_name = f'epsilons_accuracy_heatmap_{factor}_constant_at_{factor_val}.png'
         plt.savefig(os.path.join(fig_dir, fig_name), bbox_inches='tight')
         plt.close()
+
+
+def two_factor_accuracy_heatmap(
+    transf: List[List[float]],
+    accuracies: np.array,
+    transf_factors: Dict[str, float],
+    epsilons: list,
+    fig_dir: str):
+    data = []
+    for i, eps_combination in enumerate(transf):
+        # Each row in the data to include factor names as keys and their corresponding epsilon as values, plus accuracy
+        row = {factor: eps for factor, eps in zip(transf_factors.keys(), eps_combination)}
+        row['accuracy'] = accuracies[i]
+        data.append(row)
+    # Convert list of dictionaries into a DataFrame
+    df = pd.DataFrame(data)
+    df = df.round(2)
+    # Assuming the first two keys in transf_factors are the ones to be used for axes
+    factor_x, factor_y = list(transf_factors.keys())[:2]
+    # Pivot the DataFrame to get a matrix where rows are one factor, columns are another, and cells are accuracies
+    heatmap_data = df.pivot(index=factor_x, columns=factor_y, values='accuracy')
+    # Plot the heatmap
+    #plt.figure(figsize=(10, 8))
+    sns.heatmap(heatmap_data, annot=False, fmt=".2f", vmin=0, vmax=1, cbar_kws={'label': 'Accuracy'})
+    plt.xlabel(factor_y.capitalize())
+    plt.ylabel(factor_x.capitalize())
+    plt.gca().invert_yaxis()
+    # Save the figure
+    fig_name = 'model_accuracy_heatmap.png'
+    plt.savefig(os.path.join(fig_dir, fig_name), bbox_inches='tight')
+    plt.close()
+
+
+def plot_confusion_matrix(
+    true_labels: np.array,
+    predicted_labels: np.array,
+    run_id: int,
+    kth_fold: int,
+    fig_dir: Path):
+    print(f'true labels: {true_labels[:]}')
+    print(f'predicted labels: {predicted_labels[:]}')
+    cm = confusion_matrix(true_labels, predicted_labels)
+    fig, ax = plt.subplots()
+    sns.heatmap(cm, annot=True, fmt="d", cbar=False)
+    plt.xlabel('Predicted label')
+    plt.ylabel('True label')
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    fig_name = f'{timestamp}_confusion_matrix_run_{run_id+1}_kfold_{kth_fold}.png'
+    plt.savefig(os.path.join(fig_dir, fig_name), bbox_inches='tight')
+
