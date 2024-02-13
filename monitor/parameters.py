@@ -11,9 +11,7 @@ experiments = [
     #     "K_FOLDS": 5,
     #     "BATCH_SIZE": 64,
     #     "RUNS": 5,
-    #     "DATA_DIR": "transformations",
     #     "MODEL_DIR": "models",
-    #     "FIG_DIR": "results/figures",
     #     "DATASET": "gtsrb",
     #     "MODEL": "model3b.h5"
     # },
@@ -31,9 +29,7 @@ experiments = [
         "EPOCHS": 20,
         "RUNS": 1,
         "SEED": 42,
-        "DATA_DIR": "transformations",
         "MODEL_DIR": "models",
-        "FIG_DIR": "results/figures",
         "DATASET": "gtsrb",
         "MODEL": "model3b.h5"
     },
@@ -49,9 +45,7 @@ experiments = [
     #     "K_FOLDS": 5,
     #     "BATCH_SIZE": 64,
     #     "RUNS": 5,
-    #     "DATA_DIR": "transformations",
     #     "MODEL_DIR": "models",
-    #     "FIG_DIR": "results/figures",
     #     "DATASET": "gtsrb",
     #     "MODEL": "model3b.h5"
     # }

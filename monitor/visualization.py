@@ -6,7 +6,8 @@ import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_curve, auc, roc_auc_score
+from itertools import cycle
 from typing import Dict, List
 from datetime import datetime
 
@@ -79,8 +80,7 @@ def split_by_factor(
 
 
 def plot_metrics(history, run_id, k_fold, fig_dir, metric='loss'):
-    print(history)
-    print(history.history[metric])
+    sns_styleset()
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     plt.plot(history.history[metric], label=f'Training {metric}')
     plt.plot(history.history[f'val_{metric}'], label=f'Validation {metric}')
@@ -114,11 +114,10 @@ def accuracy_heatmaps(
         df = pd.DataFrame(split_eps[i], columns=labels)
         df = df.round(2)
         factor_val = df[factor][0].round(1)
-        print(df[:3])
         df.drop(columns=[factor], inplace=True)
         # produce heatmap
         heatmap_df = df.pivot(df.columns[0], df.columns[1], df.columns[2])
-        ax = sns.heatmap(heatmap_df, annot=False, vmin=0, vmax=1, cbar_kws={'label': 'Accuracy'})
+        ax = sns.heatmap(heatmap_df, annot=False, cmap='flare', vmin=0, vmax=1, cbar_kws={'label': 'Accuracy'})
         ax.invert_yaxis()
         plt.title(f'{factor.capitalize()} = {factor_val}')
         plt.xlabel(df.columns[1].capitalize())
@@ -166,8 +165,6 @@ def plot_confusion_matrix(
     run_id: int,
     kth_fold: int,
     fig_dir: Path):
-    print(f'true labels: {true_labels[:]}')
-    print(f'predicted labels: {predicted_labels[:]}')
     cm = confusion_matrix(true_labels, predicted_labels)
     fig, ax = plt.subplots()
     sns.heatmap(cm, annot=True, fmt="d", cbar=False)
@@ -178,3 +175,55 @@ def plot_confusion_matrix(
     fig_name = f'{timestamp}_confusion_matrix_run_{run_id+1}_kfold_{kth_fold}.png'
     plt.savefig(os.path.join(fig_dir, fig_name), bbox_inches='tight')
 
+
+def plot_roc_curve(
+        true_labels: np.array,
+        predicted_labels: np.array,
+        n_classes: int,
+        run_id: int,
+        kth_fold: int,
+        fig_dir: Path):
+    sns_styleset()
+    # compute ROC curve and ROC area for each class
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(true_labels[:, i], predicted_labels[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+    # compute micro-average ROC curve and ROC area
+    fpr["micro"], tpr["micro"], _ = roc_curve(true_labels.ravel(), predicted_labels.ravel())
+    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+    # cggregate all false positive rates
+    all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
+    # interpolate all ROC curves at this points
+    mean_tpr = np.zeros_like(all_fpr)
+    for i in range(n_classes):
+        mean_tpr += np.interp(all_fpr, fpr[i], tpr[i])
+    # average it and compute AUC
+    mean_tpr /= n_classes
+    fpr["macro"] = all_fpr
+    tpr["macro"] = mean_tpr
+    roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
+    # plot all ROC curves
+    plt.figure(figsize=(8, 8))
+    plt.plot(fpr["micro"], tpr["micro"],
+             label=f'micro-average OvR (area = {roc_auc["micro"]:0.2f})',
+             linestyle=':', linewidth=4)
+    plt.plot(fpr["macro"], tpr["macro"],
+             label=f'macro-average OvR (area = {roc_auc["macro"]:0.2f})',
+             linestyle=':', linewidth=4)
+    for i in range(n_classes):
+        plt.plot(fpr[i], tpr[i], lw=2,
+                 label=f'Class {i+1} (area = {roc_auc[i]:0.2f})')
+
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.legend(loc="lower right")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    fig_name = f'{timestamp}_roc_curve_run_{run_id+1}_fold_{kth_fold+1}.png'
+    plt.savefig(fig_dir / fig_name, bbox_inches='tight')
+    plt.close()
