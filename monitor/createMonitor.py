@@ -8,8 +8,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import classification_report
 from utils import setup_logger
 from utils import reset_random_seeds
-from visualization import plot_metrics, plot_confusion_matrix
-
+from visualization import *
 
 def loadData(data_dir: Path) -> typing.Tuple[np.array, np.array, np.array, np.array]:
     with open(data_dir / 'data.pickle', 'rb') as f:
@@ -44,7 +43,7 @@ def init_bias(labels: np.array) -> np.array:
         
 
 def train_monitor(
-        model_dir: str,
+        model_dir: Path,
         data_dir: Path,
         fig_dir: Path,
         k_folds: int,
@@ -140,9 +139,13 @@ def test_monitor(
         test_acc = model.evaluate(testX, testY)
         logger.info(f'Test Accuracy for k={k+1}: {test_acc}')
         ohe_testY = np.argmax(testY, axis=1)
-        ohe_predY = np.argmax(model.predict(testX), axis=1)
+        y_prob = model.predict(testX)
+        ohe_predY = np.argmax(y_prob, axis=1)
         # plot confusion matrix
         plot_confusion_matrix(ohe_testY, ohe_predY, run_id, k+1, fig_dir)
+        # plot roc curve
+        n_classes = testY.shape[1]
+        plot_roc_curve(testY, y_prob, n_classes, run_id, k+1, fig_dir)
         # log classification report
         logger.info(f'Classification Report for k={k+1}:')
         logger.info(classification_report(ohe_testY, ohe_predY))
