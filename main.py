@@ -32,7 +32,8 @@ if __name__ == "__main__":
         pprint(exp, sort_dicts=False)
 
         RESULTS_DIR, FIG_DIR, TRANSF_DIR, MONITOR_DIR, IMAGE_DIR = create_out_dirs(
-                transf_factors=exp['TRANSF_FACTORS']
+                transf_factors=exp['TRANSF_FACTORS'],
+                dataset=exp['DATASET']
                 )
 
         if exp['SEED'] > 0:
@@ -46,37 +47,37 @@ if __name__ == "__main__":
             handler.close()
             logger.removeHandler(handler)
 
-        # only generate datasets on the first run
-        # gen_datasets_from_transforms(
-        #         transf_factors=exp['TRANSF_FACTORS'],
-        #         epsilons=exp['EPSILONS'],
-        #         dataset=exp['DATASET'],
-        #         out_dir=TRANSF_DIR
-        #         )
+        if not os.path.isfile(RESULTS_DIR / 'data.pickle'):
+            # only generate datasets on the first run
+            gen_datasets_from_transforms(
+                    transf_factors=exp['TRANSF_FACTORS'],
+                    epsilons=exp['EPSILONS'],
+                    dataset=exp['DATASET'],
+                    out_dir=TRANSF_DIR
+                    )
 
-        # generate_all_images_for_transformations(
-        #         transf_dir=exp['TRANSF_DIR'],
-        #         image_size=(128, 128),
-        #         out_dir=exp['IMAGE_DIR'] / 'all_images',
-        #         )
+            compute_and_save_accuracies(
+                    model_dir=exp['MODEL_DIR'],
+                    dataset=exp['DATASET'],
+                    model_name=exp['MODEL'],
+                    data_dir=TRANSF_DIR,
+                    acc_bounds=exp['ACC_BOUNDS']
+                    )
 
-        # compute_and_save_accuracies(
-        #         model_dir=exp['MODEL_DIR'],
-        #         dataset=exp['DATASET'],
-        #         model_name=exp['MODEL'],
-        #         data_dir=TRANSF_DIR,
-        #         acc_bounds=exp['ACC_BOUNDS']
-        #         )
+            generate_all_images_for_transformations(
+                    transf_dir=TRANSF_DIR,
+                    image_size=(128, 128),
+                    out_dir=IMAGE_DIR / 'all_images',
+                    )
 
-        log_accuracy_across_classes(
-                transf_factors=exp['TRANSF_FACTORS'],
-                epsilons=exp['EPSILONS'],
-                transf_dir=TRANSF_DIR,
-                data_dir=RESULTS_DIR,
-                acc_bounds=exp['ACC_BOUNDS'],
-                log_label='labels'
-                )
-        
+            log_accuracy_across_classes(
+                    transf_factors=exp['TRANSF_FACTORS'],
+                    epsilons=exp['EPSILONS'],
+                    transf_dir=TRANSF_DIR,
+                    data_dir=RESULTS_DIR,
+                    acc_bounds=exp['ACC_BOUNDS'],
+                    log_label='labels'
+                    )
 
         for run in range(exp['RUNS']):
             prepare_and_save_data(
@@ -90,23 +91,23 @@ if __name__ == "__main__":
                     seed=exp['SEED']
                     )
 
-            # p = multiprocessing.Process(
-            #          target=train_monitor,
-            #          args=(
-            #              MONITOR_DIR,    
-            #              RESULTS_DIR,
-            #              FIG_DIR,
-            #              exp['K_FOLDS'],
-            #              exp['BATCH_SIZE'],
-            #              exp['EPOCHS'], 
-            #              exp['SEED'],
-            #              run
-            #              )
-            #          )
-            # # manage memory in multiprocessing process
-            # p.start()
-            # p.join()
-            # p.terminate()
+            p = multiprocessing.Process(
+                     target=train_monitor,
+                     args=(
+                         MONITOR_DIR,    
+                         RESULTS_DIR,
+                         FIG_DIR,
+                         exp['K_FOLDS'],
+                         exp['BATCH_SIZE'],
+                         exp['EPOCHS'], 
+                         exp['SEED'],
+                         run
+                         )
+                     )
+            # manage memory in multiprocessing process
+            p.start()
+            p.join()
+            p.terminate()
 
             p = multiprocessing.Process(
                      target=test_monitor,
