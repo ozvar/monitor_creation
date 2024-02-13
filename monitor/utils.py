@@ -91,9 +91,9 @@ def setup_logger(data_dir: Path, run_id: int, log_label: str):
     return logger
 
 
-def create_out_dirs(transf_factors:Dict[str, float]):
+def create_out_dirs(transf_factors:Dict[str, float], dataset:str) -> typing.Tuple[Path,Path,Path,Path,Path]:
     sub_dir = "_".join([f"{key}_{value}" for key, value in transf_factors.items()])
-    base_dir = Path('results') / sub_dir
+    base_dir = Path('results') / dataset / sub_dir
     
     fig_dir = base_dir / 'figures'
     transf_dir = base_dir / 'transformations'
@@ -163,17 +163,22 @@ def generate_all_images_for_transformations(
         image_size: typing.Tuple[int, int],
         out_dir: Path
         ) -> None:
-    # get class of dataset from labDatasets.npy
-    lab_data = np.load(transf_dir / 'labDatasets.npy')
-    for i, (perf, label) in enumerate(lab_data):
-        # get all datasets for class, they begin with the string "data"
-        datasets = [f for f in os.listdir(transf_dir) if f.startswith('data')]
-        # take only datasets where index i
-        # create output directory for class
-        class_label = f'class_{int(label)+1}'
+    # Assuming labDatasets.npy structure: array of tuples (dataset_name, class_label)
+    lab_data = np.load(transf_dir / 'labDatasets.npy', allow_pickle=True)  # Ensure proper loading of structured data
+    class_datasets = {}  # Dictionary to map class labels to datasets
+    datasets = [f for f in os.listdir(transf_dir) if f.startswith('data')] 
+    datasets = sorted(datasets, key=lambda x: int(x.rstrip('.npy').split('data')[-1]))
+    for label, dataset in zip(lab_data[:, 1], datasets):
+        label = int(label)
+        if label not in class_datasets:
+            class_datasets[label] = []
+        class_datasets[label].append(dataset)
+    
+    for label, datasets in class_datasets.items():
+        class_label = f'class_{int(label)}'
         for d in datasets:
-            print(f'Generating images for {d}...')
-            dataset_dir = out_dir / class_label / str(d).split('.')[0] 
+            print(f'Generating images for dataset {d} in class {label}...')
+            dataset_dir = out_dir / class_label / d.split('.')[0]
             os.makedirs(dataset_dir, exist_ok=True)
             generate_images_from_dataset(
                     transf_dir=transf_dir,
